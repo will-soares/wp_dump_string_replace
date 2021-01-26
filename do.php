@@ -5,6 +5,7 @@
  * Version: 0.2.0
  * Author: Will Soares
  * Author URI: https://github.com/will-soares
+ * Code Repo: https://github.com/will-soares/wp_dump_string_replace
  * Requires PHP: 5.6.20
  * License: MIT License
  *
