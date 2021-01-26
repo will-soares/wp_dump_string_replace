@@ -1,4 +1,21 @@
 <?php
+/**
+ * Name: wp_dump_string_replace
+ * Description: PHP script for strings replacement in Wordpress dumps. Useful to move production database to DEV and STG environments.
+ * Version: 0.2.0
+ * Author: Will Soares
+ * Author URI: https://github.com/will-soares
+ * Requires PHP: 5.6.20
+ * License: MIT License
+ *
+ * @package 	wp_dump_string_replace
+ * @author		Will Soares
+ * @copyright   Copyright (C) 2021 Will Soares
+ * @license		MIT License
+ * @link		https://github.com/will-soares
+ * @version 	0.2.0
+ */
+
 ini_set('memory_limit', '1024M');
 
 ob_start();
