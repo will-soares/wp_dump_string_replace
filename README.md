@@ -14,16 +14,16 @@ Will Soares
 Make sure you have PHP installed locally. Go to your Terminal and run:
 
 ```
-php do.php search_string replace_string file_dump_path [... output_file_path]
+php replace.php search_string replace_string file_dump_path [... output_file_path]
 ```
 
 **Example**
 This will generate and SQL file named `your-dump_output.sql` in `path/to/`
 ```
-php do.php `www.example.com` `www.staging.example.com` `path/to/your-dump.sql`
+php replace.php `www.example.com` `www.staging.example.com` `path/to/your-dump.sql`
 ```
 In case you set the optional parameter, then the file will be created wherever you want:
 
 ```
-php do.php `www.example.com` `www.staging.example.com` `path/to/your-dump.sql` `/Desktop/your-new-dump.sql`
+php replace.php `www.example.com` `www.staging.example.com` `path/to/your-dump.sql` `/Desktop/your-new-dump.sql`
 ```

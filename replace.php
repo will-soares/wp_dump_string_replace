@@ -14,7 +14,7 @@
  * @copyright   Copyright (C) 2021 Will Soares
  * @license		MIT License
  * @link		https://github.com/will-soares
- * @version 	0.2.0
+ * @version 	0.2.1
  */
 
 ini_set('memory_limit', '1024M');
