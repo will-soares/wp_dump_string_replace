@@ -20,10 +20,10 @@ php replace.php search_string replace_string file_dump_path [... output_file_pat
 **Example**
 This will generate and SQL file named `your-dump_output.sql` in `path/to/`
 ```
-php replace.php `www.example.com` `www.staging.example.com` `path/to/your-dump.sql`
+php replace.php www.example.com www.staging.example.com path/to/your-dump.sql
 ```
 In case you set the optional parameter, then the file will be created wherever you want:
 
 ```
-php replace.php `www.example.com` `www.staging.example.com` `path/to/your-dump.sql` `/Desktop/your-new-dump.sql`
+php replace.php www.example.com www.staging.example.com path/to/your-dump.sql /Desktop/your-new-dump.sql
 ```

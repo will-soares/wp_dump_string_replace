@@ -14,10 +14,10 @@
  * @copyright   Copyright (C) 2021 Will Soares
  * @license		MIT License
  * @link		https://github.com/will-soares
- * @version 	0.2.0
+ * @version 	0.3.0
  */
 
-ini_set('memory_limit', '1024M');
+ini_set('memory_limit', '256M');
 
 ob_start();
 
@@ -32,9 +32,7 @@ function get_serialization($txt){
 					'len' => intval(explode(':', substr($txt, $i+3) )[0])
 				];
 	}
-
 	return false;
-
 }
 
 function human_filesize($bytes, $decimals = 2) {
@@ -44,64 +42,88 @@ function human_filesize($bytes, $decimals = 2) {
 }
 
 function replace_file_strings($search_string, $replace_string, $file_path, $output_path){
-	echo "\nReading $file_path (". human_filesize(filesize($file_path)) .")\n";
-	ob_flush();
-	// the content of file_path
-	$content = file_get_contents($file_path);
+	// Source file handler
+	$source = fopen($file_path, "r");
 
-	// An array containing each content line
-	$lines = explode("\n",$content);
-	$content = '';
+	// Source file size
+	$file_size = filesize($file_path);
+
+	// Creates or replace the output file
+	file_put_contents($output_path,'');
+	// Output file handler
+	$output = fopen($output_path, 'a');
+
+	// Prints a progress bar
+	$bar = '';
+	while(strlen($bar) < 25){
+		$bar .= "_";
+	}
+	echo "\nProcessing $file_path (". human_filesize($file_size) .")\n$bar\n";
+	ob_flush();
 
 	// Stores the difference between searched and replaced strings lengths
 	$len_diff = strlen($replace_string) - strlen($search_string);
 
-	// Creates or replacing the output file
-	file_put_contents($output_path,'');
-
-	// Some feedback would be welcome
+	// Stores the count of replace operations
 	$replace_count = 0;
+	// Stores the count of serialization fixes
 	$serialization_count = 0;
-	$processed_lines = 0;
-	$printed = 0;
-	$total_lines = count($lines);
-	$bar = '';
 
-	while(strlen($bar) < 100)
-		$bar .= '_';
+	// Progress feedback vars
+	$progress = 0;
+	$progress_feedback = 0;
 
-	echo "\nProcessing $total_lines lines...\n$bar\n";
+	// Stores a maximum 10MB of data before flush into the output file
+	$chunk = '';
+	// Stores the chunk size to avoid massive strlen() calls
+	$chunk_size = 0;
 
-	foreach($lines as $line){
+	while(!feof($source)) {
+		$line = fgets($source);
 		$n = substr_count($line, $search_string);
 		for($i = 0; $i < $n; $i++){
 			$len = strpos($line, $search_string);
 			$new_line = substr($line, 0, $len);
 			
 			$s = get_serialization($new_line);
-
 			if($s !== false){
 				$new_line = str_replace($s->sep . $s->len .':', $s->sep .  strval($s->len + $len_diff) .':', $new_line);
 				$serialization_count++;
 			}
+
 			$new_line .= $replace_string . substr($line, $len + strlen($search_string));
 			$line = $new_line;
 			unset($new_line);
 			$replace_count++;
 		}
-		$processed_lines++;
-
-		$percent = floor($processed_lines / $total_lines * 100);
-
-		if($printed != $percent){
-			$printed = $percent;
-			echo '*';
+		$chunk_size += strlen($line);
+		$chunk .= $line;
+		
+		// Flushes chunk to the output file if it's bigger than 1/10 of file_size or max 10MB has been reached
+		if($chunk_size > ($file_size / 10) || $chunk_size >= 10240){
+			fwrite($output, $chunk);
+			clearstatcache($output_path);
+			$progress = ceil((filesize($output_path)/ $file_size) * 25);
+			$chunk = '';
+			$chunk_size = 0;
+		}
+		// Printing progress bar
+		if($progress > $progress_feedback){
+			$progress_feedback = $progress;
+			echo "·";
 			ob_flush();
 		}
-		$content .= "$line\n";
 	}
-	file_put_contents($output_path, $content);
-	echo "\nLines Processed: $processed_lines\nStrings Replaced: $replace_count\nSerialization fixes: $serialization_count\nCheck it out: $output_path\n\nCheers! :)\n";
+	// check for unflushed data
+	if($chunk_size > 0){
+		fwrite($output, $chunk);
+		$chunk = '';
+		$chunk_size = 0;
+	}
+	fclose($output);
+	fclose($source);
+	
+	echo "\n\nStrings Replaced: $replace_count\nSerialization fixes: $serialization_count\nCheck it out: $output_path\n\nCheers! :)\n";
 }
 
 function init($params){
@@ -117,7 +139,9 @@ function init($params){
 	if(stripos('txt sql', $file_type) === false)
 		die("Invalid file type: ". strtoupper($file_type) ."\n");
 
-	$output_path = $params[4] ? $params[4] : str_replace(".$file_type", "_output.$file_type", $file_path);
+	$output_path = $params[4] && $params[4] != $file_path
+					? $params[4]
+					: str_replace(".$file_type", "_output.$file_type", $file_path);
 
 	if(strpos($output_path, $file_type) === false)
 		die("Invalid output format.\n");
